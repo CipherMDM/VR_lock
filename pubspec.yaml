@@ -29,8 +29,8 @@ dev_dependencies:
     sdk: flutter
   device_info: ^0.4.0+2
   device_apps: ^1.0.8
-  cloud_firestore: ^0.12.5+2
-  firebase_core: ^0.4.0+6
+  cloud_firestore:
+  firebase_core:
   imei_plugin: ^1.1.0
   screenshot: ^0.1.1
   uninstall_apps: ^0.0.4

