@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:device_apps/device_apps.dart';
+import 'package:getinfo/settings.dart';
 
 class AppDraw extends StatefulWidget {
   @override
@@ -18,8 +19,7 @@ class _AppDrawState extends State<AppDraw> {
   }
 
    Stream getApps() async*{
-    apps = await DeviceApps.getInstalledApplications(includeAppIcons: true,onlyAppsWithLaunchIntent: true);
-   
+     apps = await DeviceApps.getInstalledApplications(includeAppIcons: true,onlyAppsWithLaunchIntent: true);
      setState(() {
        
      });
@@ -40,9 +40,26 @@ class _AppDrawState extends State<AppDraw> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  Colors.grey,
+      backgroundColor:  Colors.white,
+        
+       appBar: AppBar(
+            elevation: 0.0,
+
+            leading: IconButton(icon: Icon(Icons.arrow_back_ios,color: Colors.black,),onPressed: (){Navigator.of(context).pop();},),
+            
+            backgroundColor: Colors.white,
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.settings,color: Colors.black,),
+                onPressed: (){
+                      var  route = MaterialPageRoute(builder: (context)=>Settings());
+                      Navigator.of(context).push(route);
+                },
+              )
+            ],
+          ),
       body: Padding(
-        padding: const EdgeInsets.only(right: 40),
+        padding: const EdgeInsets.only(right: 0),
         child: Container(
           
 

