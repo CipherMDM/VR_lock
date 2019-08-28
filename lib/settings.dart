@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:connect_wifi/connect_wifi.dart';
+import 'package:settings_plugin/settings_plugin.dart';
 
 
 class Settings extends StatefulWidget {
@@ -34,6 +35,78 @@ class _SettingsState extends State<Settings> {
                             },       
                             leading: Icon(Icons.wifi,color: Colors.black,) ,
                             title:Text("Wifi",style: TextStyle(color: Colors.black),) ,
+                               ),
+                   Container(
+                     height: 1,
+                     color: Colors.black.withOpacity(0.1),
+                   )            
+                ],
+              ),
+            ),
+             Container(
+            
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                            onTap: (){
+                               SettingsPlugin.bluetooth();
+                            },       
+                            leading: Icon(Icons.bluetooth,color: Colors.black,) ,
+                            title:Text("Bluetooth",style: TextStyle(color: Colors.black),) ,
+                               ),
+                   Container(
+                     height: 1,
+                     color: Colors.black.withOpacity(0.1),
+                   )            
+                ],
+              ),
+            ),
+             Container(
+            
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                            onTap: (){
+                               SettingsPlugin.display();
+                            },       
+                            leading: Icon(Icons.mobile_screen_share,color: Colors.black,) ,
+                            title:Text("Display",style: TextStyle(color: Colors.black),) ,
+                               ),
+                   Container(
+                     height: 1,
+                     color: Colors.black.withOpacity(0.1),
+                   )            
+                ],
+              ),
+            ),
+             Container(
+            
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                            onTap: (){
+                               SettingsPlugin.sound();
+                            },       
+                            leading: Icon(Icons.music_note,color: Colors.black,) ,
+                            title:Text("Sound",style: TextStyle(color: Colors.black),) ,
+                               ),
+                   Container(
+                     height: 1,
+                     color: Colors.black.withOpacity(0.1),
+                   )            
+                ],
+              ),
+            ),
+            Container(
+            
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                            onTap: (){
+                               SettingsPlugin.date_time();
+                            },       
+                            leading: Icon(Icons.access_time,color: Colors.black,) ,
+                            title:Text("Date & Time",style: TextStyle(color: Colors.black),) ,
                                ),
                    Container(
                      height: 1,

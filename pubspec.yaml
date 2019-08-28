@@ -43,6 +43,7 @@ dev_dependencies:
   connectivity: ^0.4.3+7
   flutter_local_notifications:
   policy_controller: ^0.0.2
+  settings_plugin:
  
 
 
