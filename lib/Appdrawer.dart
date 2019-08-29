@@ -3,6 +3,12 @@ import 'package:device_apps/device_apps.dart';
 import 'package:getinfo/settings.dart';
 
 class AppDraw extends StatefulWidget {
+
+  String fg;
+
+  AppDraw(this.fg);
+
+
   @override
   _AppDrawState createState() => _AppDrawState();
 }
@@ -52,7 +58,7 @@ class _AppDrawState extends State<AppDraw> {
               IconButton(
                 icon: Icon(Icons.settings,color: Colors.black,),
                 onPressed: (){
-                      var  route = MaterialPageRoute(builder: (context)=>Settings());
+                      var  route = MaterialPageRoute(builder: (context)=>Settings(widget.fg));
                       Navigator.of(context).push(route);
                 },
               )

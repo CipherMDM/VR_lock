@@ -8,6 +8,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.2"
+  analog_clock:
+    dependency: "direct dev"
+    description:
+      name: analog_clock
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1"
   async:
     dependency: transitive
     description:
