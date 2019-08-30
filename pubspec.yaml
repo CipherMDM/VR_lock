@@ -34,7 +34,7 @@ dev_dependencies:
   imei_plugin: ^1.1.0
   screenshot: ^0.1.1
   uninstall_apps: ^0.0.4
-  admin:
+  admin: ^0.0.4
   flutter_install_app_plugin:
   file_picker: ^1.3.8
   downloader: ^0.0.1

