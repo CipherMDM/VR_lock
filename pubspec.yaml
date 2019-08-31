@@ -45,6 +45,9 @@ dev_dependencies:
   policy_controller: ^0.0.2
   settings_plugin:
   analog_clock: ^0.0.1
+  battery: ^0.3.0+5
+  android_wifi_info: ^0.1.1
+  system_info : ^0.1.1
  
 
 

