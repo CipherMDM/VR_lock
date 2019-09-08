@@ -48,6 +48,9 @@ dev_dependencies:
   battery: ^0.3.0+5
   android_wifi_info: ^0.1.1
   system_info : ^0.1.1
+  running_apps: ^0.0.8
+  app_usage: ^0.1.0
+  cpu_usage: ^0.0.2
  
 
 

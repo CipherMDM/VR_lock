@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:settings_plugin/settings_plugin.dart';
@@ -16,12 +18,70 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     return  Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios,color: Colors.black,),
+          onPressed: (){
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.cancel,color: Colors.red,),
+                 onPressed: (){
+                   showDialog(context: context,builder: (context){
+                          TextEditingController cont = TextEditingController();
+                          return AlertDialog(
+                             title: Text("Exit Kiosk"),
+                             content: Container(
+                               height: 35,
+                               child: Container(
+                                 height: 35,
+                                 child: TextField(
+                                   
+                                   controller: cont,
+                                   decoration: InputDecoration(
+                                     suffixIcon: Icon(Icons.visibility),
+                                     hintText: "Enter Pin",
+                                     contentPadding: EdgeInsets.only(left: 15,right: 8,top: 8,bottom: 8),
+                                     border: OutlineInputBorder(
+                                       borderRadius: BorderRadius.circular(20)
+                                     )
+                                   ),
+                                 ),
+                               ),
+                             ),
+                             actions: <Widget>[
+                               Padding(
+                                 padding: const EdgeInsets.all(18.0),
+                                 child: GestureDetector(
+                                   onTap: (){
+                                       if(cont.text=="1234"){
+                                           exit(0);
+                                       }
+                                   },
+                                   child: Text("Exit",style:TextStyle(color: Colors.red)),
+                                 ),
+                               ),
+                               Padding(
+                                 padding: const EdgeInsets.all(18.0),
+                                 child: GestureDetector(
+                                   child: Text("cancel"),
+                                   onTap: (){
+                                     Navigator.of(context).pop();
+                                   },
+                                 ),
+                               )
+                             ],
+                          );
+                   });
+                 },
+          )
+        ],
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Padding(
-            padding: const EdgeInsets.only(right:55.0),
+            padding: const EdgeInsets.only(right:10.0),
             child: Center(child: Text("Settings",style: TextStyle(color: Colors.black),),),
           ),
         ),

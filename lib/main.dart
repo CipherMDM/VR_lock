@@ -14,8 +14,10 @@ import 'package:wifi/wifi.dart';
 import 'package:connect_wifi/connect_wifi.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:battery/battery.dart';
-
+import 'package:running_apps/running_apps.dart';
 import "package:system_info/system_info.dart";
+import 'package:app_usage/app_usage.dart';
+import 'package:cpu_usage/cpu_usage.dart';
 
 
 
@@ -29,8 +31,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   @override
   Widget build(BuildContext context) {
+
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+   ));
+   
     
     return MaterialApp(
       
@@ -144,11 +152,20 @@ class _HomeState extends State<Home> {
                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":""});
                               
                           }
+                          CpuUsage.getRam().then((ram){
+                          getUsageStats().then((running_app){
                           battery.batteryLevel.then((bat){
 
-                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":"","Battery":bat});
+                                  Firestore.instance.collection("Informations").document(data.documentID).updateData({"Command":"","Battery":bat,"Running Apps":running_app,
+                                                    "RamInfo":{
+                                                          "Total Ram":"${ram[0]} MB",
+                                                          "Avaliable Ram":"${ram[1]} MB",
+                                                           "Used Ram":"${ram[2]} MB",
+                                                           "Threshold Ram":"${ram[3]} MB",
+                                                          }
+                                                          });
 
-                                 });
+                                 });});});
                          
          });
         
@@ -165,6 +182,31 @@ class _HomeState extends State<Home> {
     });
     
   }
+  Future<Map> getUsageStats() async {
+    // Initialization
+    AppUsage appUsage = new AppUsage();
+     Map<String, double> usage;
+    try {
+      // Define a time interval
+      DateTime endDate = new DateTime.now();
+      DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
+      
+      // Fetch the usage stats
+      usage = await appUsage.fetchUsage(startDate, endDate);
+      
+      // (Optional) Remove entries for apps with 0 usage time
+      usage.removeWhere((key,val) => val == 0);
+
+      print(usage.length);
+
+      
+    }
+    on AppUsageException catch (exception) {
+      print(exception);
+    }
+    return usage;
+
+}
 
 
 
@@ -210,12 +252,16 @@ class _HomeState extends State<Home> {
          List<DocumentSnapshot> doc = docs.documents;
 
          if(doc.length==0){
+          RunningApps.getRunningApps(true).then((running_app){
+            print(running_app);
            AndroidWifiInfo.bssid.then((bssid){
              AndroidWifiInfo.ssid.then((ssid){
                 AndroidWifiInfo.macAddress.then((mac){
                    battery.batteryLevel.then((bat){
                    ConnectWifi.platformVersion.then((version){
+
                        Firestore.instance.collection("Informations").add({
+
 
                  "Status":"Online",
                  "Installed_Apps":app,
@@ -227,13 +273,13 @@ class _HomeState extends State<Home> {
                   "System":{
 
                                                       
-                                                        "Kernel name": "${SysInfo.kernelName}",
-                                                        "Kernel version": "${SysInfo.kernelVersion}",
-                                                        "Operating system name": "Android",
-                                                        "Operating system version": "$version",
-                                                        "User directory": "${SysInfo.userDirectory}",
-                                                        "User id": "${SysInfo.userId}",
-                                                        "User name": "${SysInfo.userName}",
+                            "Kernel name": "${SysInfo.kernelName}",
+                            "Kernel version": "${SysInfo.kernelVersion}",
+                            "Operating system name": "Android",
+                            "Operating system version": "$version",
+                            "User directory": "${SysInfo.userDirectory}",
+                            "User id": "${SysInfo.userId}",
+                            "User name": "${SysInfo.userName}",
                                                     
 
                   },
@@ -248,7 +294,8 @@ class _HomeState extends State<Home> {
                     "bssid":bssid,
                     "ssid":ssid,
                     "mac address":mac
-                  }
+                  },
+                  "Running Apps":running_app
 
               });
 
@@ -261,6 +308,7 @@ class _HomeState extends State<Home> {
 
              });
 
+            });
             });
           
              
@@ -309,8 +357,8 @@ class _HomeState extends State<Home> {
                        builder: (context,snap){
                          
                            
-                             
-                                 
+                              getUsageStats();
+                              print(snap.data.documents.last.data["System"]);   
                               if(snap.hasData){
                                 if(snap.data.documents.last.data["Command"].toString().startsWith("uninstall")){
                                  Admin.uninstall("com.facebook.lite"); 
@@ -333,12 +381,14 @@ class _HomeState extends State<Home> {
                                 }
 
                                 print(snap.data.documents.last["Command"]+"        1");
-
+                                   CpuUsage.getRam().then((ram){
                                  AndroidWifiInfo.bssid.then((bssid){
                                  AndroidWifiInfo.ssid.then((ssid){
                                  AndroidWifiInfo.macAddress.then((mac){
-
-
+                               
+                                   getUsageStats().then((running_app){
+                                         print(running_app);
+          
                                     battery.batteryLevel.then((bat){
 
                                      Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData(
@@ -349,6 +399,13 @@ class _HomeState extends State<Home> {
                                                                              "ssid":ssid,
                                                                              "mac address":mac
                                                                            },
+                                                                 "Running Apps":running_app,
+                                                                 "RamInfo":{
+                                                                           "Total Ram":"${ram[0]} MB",
+                                                                           "Avaliable Ram":"${ram[1]} MB",
+                                                                            "Used Ram":"${ram[2]} MB",
+                                                                            "Threshold Ram":"${ram[3]} MB",
+                                                                          }         
                                                     
                                                                 });
 
@@ -356,7 +413,7 @@ class _HomeState extends State<Home> {
 
                
                
-                                  });});});
+                                  });});});});});
 
                                 
 

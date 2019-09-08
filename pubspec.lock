@@ -22,6 +22,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.1"
+  app_usage:
+    dependency: "direct dev"
+    description:
+      name: app_usage
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   async:
     dependency: transitive
     description:
@@ -78,6 +85,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.3+7"
+  cpu_usage:
+    dependency: "direct dev"
+    description:
+      name: cpu_usage
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -221,6 +235,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.3"
+  running_apps:
+    dependency: "direct dev"
+    description:
+      name: running_apps
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.8"
   screenshot:
     dependency: "direct dev"
     description:
