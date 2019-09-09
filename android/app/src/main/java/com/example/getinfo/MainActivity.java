@@ -40,7 +40,6 @@ import android.view.GestureDetector;
 import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
-
 import android.util.Log;
 import android.widget.Toast;
 import android.app.Activity;
@@ -61,6 +60,8 @@ import android.widget.Toast;
 import android.content.pm.PackageManager;
 import android.app.PendingIntent;
 import android.content.pm.PackageInstaller;
+import android.Manifest;
+
 
 
 public class MainActivity extends FlutterActivity {
@@ -84,9 +85,10 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         flutterView=getFlutterView();
         GeneratedPluginRegistrant.registerWith(this);
-        
         doNotLockScreen();
         hideSystemUI(flutterView);
+
+        
         
         View decorView = getWindow().getDecorView();
         // Hide the status bar.
@@ -174,11 +176,11 @@ public class MainActivity extends FlutterActivity {
                     // Currently, the delay is 100 ms. You can change this
                     // value to suit your needs.
                     if (!currentFocus && !isPaused) {
-                        collapseNotificationHandler.postDelayed(this, 100L);
+                        collapseNotificationHandler.postDelayed(this, 1L);
                     }
     
                 }
-            }, 300L);
+            }, 3L);
         }   
     }
 

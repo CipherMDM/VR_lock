@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:getinfo/config.dart';
 
 import 'package:settings_plugin/settings_plugin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,7 +31,7 @@ class _SettingsState extends State<Settings> {
                    showDialog(context: context,builder: (context){
                           TextEditingController cont = TextEditingController();
                           return AlertDialog(
-                             title: Text("Exit Kiosk"),
+                             title: Text("Admin Panel"),
                              content: Container(
                                height: 35,
                                child: Container(
@@ -55,10 +56,13 @@ class _SettingsState extends State<Settings> {
                                  child: GestureDetector(
                                    onTap: (){
                                        if(cont.text=="1234"){
-                                           exit(0);
+                                          Navigator.of(context).pop();
+                                          var route = MaterialPageRoute(builder: (context)=>Config());
+                                          Navigator.push(context, route);
+                                         
                                        }
                                    },
-                                   child: Text("Exit",style:TextStyle(color: Colors.red)),
+                                   child: Text("Enter",style:TextStyle(color: Colors.red)),
                                  ),
                                ),
                                Padding(
@@ -89,8 +93,10 @@ class _SettingsState extends State<Settings> {
       body: StreamBuilder(
         stream: Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:widget.fg).snapshots(),
         builder: (context, snapshot) {
+        
           List<DocumentSnapshot> doc = snapshot.data.documents;
-          return ListView.builder(
+          
+          return !snapshot.hasData?Center(child: CircularProgressIndicator(),):ListView.builder(
             itemCount: doc.last["Settings"].length,
             itemBuilder: (context,i){
                 return getSettings(doc.last["Settings"][i]);
