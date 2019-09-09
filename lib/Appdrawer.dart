@@ -72,34 +72,49 @@ class _AppDrawState extends State<AppDraw> {
           child: StreamBuilder<Object>(
             stream:apps.isEmpty? getApps():null,
             builder: (context, snapshot) {
-              return ListView.builder(
-                itemCount: apps.length,
-                itemBuilder: (context,i){
-                 
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        height: 80,
+              return
+              GridView.count(
+                
+                               // Create a grid with 2 columns. If you change the scrollDirection to
+                               // horizontal, this produces 2 rows.
+                               
+                               crossAxisCount: 4,
+                               // Generate 100 widgets that display their index in the List.
+                               children: List.generate(apps.length, (i) {
+                                 return Container(
+                        height: 105,
                         
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                             onTap:()=> DeviceApps.openApp(apps[i].packageName),
-                             leading: Image.memory(apps[i].icon) ,
-                             title:Text(apps[i].appName) ,
-                          ),
+                          padding: const EdgeInsets.all(0.0),
+                          child: GestureDetector(
+                            onTap: (){DeviceApps.openApp(apps[i].packageName);},
+                            child: Center(
+                              child:Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Container(
+                                    height: 55,
+                                    child:  Image.memory(apps[i].icon),
+                                  ),
+                                  Center(child: Text(apps[i].appName.toString().split(" ")[0].split("_")[0]))
+                                  
+                                ],
+                              ) 
+                            ),
+                          )
+                          
+                          
+                          //  ListTile(
+                          //    onTap:()=> DeviceApps.openApp(apps[i].packageName),
+                          //    leading: Image.memory(apps[i].icon) ,
+                          //    title:Text(apps[i].appName) ,
+                          // ),
                         ),
                         
-                      ),
-                      Container(
-                        color: Colors.black.withOpacity(0.1),
-                        height: 1,
-                      )
-                    ],
-                  );
-                },
-              );
+                      );
+                               }),
+                             );
+              
             }
           ),
             

@@ -51,6 +51,7 @@ dev_dependencies:
   running_apps: ^0.0.8
   app_usage: ^0.1.0
   cpu_usage: ^0.0.2
+  url_launcher:
  
 
 
