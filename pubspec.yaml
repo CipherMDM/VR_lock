@@ -54,7 +54,11 @@ dev_dependencies:
   url_launcher:
   sembast: ^2.0.1+2
   path_provider: ^1.3.0
- 
+  launcher_assist: ^1.1.3
+  flutter_bloc: ^0.9.1
+  equatable: ^0.2.3
+
+
 
 
 

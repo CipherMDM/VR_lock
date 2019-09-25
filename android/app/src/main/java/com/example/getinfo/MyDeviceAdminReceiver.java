@@ -1,4 +1,4 @@
-package com.example.adminapp;
+package com.example.getinfo;
 import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +30,6 @@ public class MyDeviceAdminReceiver extends DeviceAdminReceiver {
          MyDeviceAdminReceiver(Activity activity){
         this.activity= activity;
   }
-
 
 
     /**

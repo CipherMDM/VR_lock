@@ -1,13 +1,14 @@
-
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:getinfo/config.dart';
+import 'package:getinfo/database/policy.dart';
 import 'Home.dart';
 import 'package:sembast/sembast.dart';
+import 'package:path/path.dart';
+import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:device_apps/device_apps.dart';
+
 
 
 
@@ -23,48 +24,29 @@ class _MyAppState extends State<MyApp> {
 
     bool isConfig = true;
     var store = StoreRef.main();
-  
-    Future<Database>  openDB()async{
-
-  
-    String dbPath = 'sample.db';
-    
-   
-
+    List apps = [];
+    List all_apps=[];
 
 
     
-    DatabaseFactory dbFactory = databaseFactoryIo;
-
-    // We use the database factory to open the database
-    Database db = await dbFactory.openDatabase(dbPath);
-    try{
-       store.record("Config").get(db);
-    }catch(_){
-        print("object");
-        store.record("Config").put(db, false);
-    }
-   
-    return db;
-  }
 
   @override
   void initState() {
-    // TODO: implement initState
-   
+
+  
     super.initState();
   }
 
 
   @override
   Widget build(BuildContext context)  {
-
     
-        
+    
+    
     return MaterialApp(
-
       
-      home:Home(),
+      
+      home:Home(apps),
       debugShowCheckedModeBanner: false,
     );
   }

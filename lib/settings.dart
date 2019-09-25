@@ -8,10 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class Settings extends StatefulWidget {
+  List current_apps = [];
+  List all_apps=[];
+
   @override
   _SettingsState createState() => _SettingsState();
   String fg;
-  Settings(this.fg);
+  Settings(this.fg,this.current_apps,this.all_apps);
 }
 
 class _SettingsState extends State<Settings> {
@@ -57,7 +60,7 @@ class _SettingsState extends State<Settings> {
                                    onTap: (){
                                        if(cont.text=="1234"){
                                           Navigator.of(context).pop();
-                                          var route = MaterialPageRoute(builder: (context)=>Config());
+                                          var route = MaterialPageRoute(builder: (context)=>Config(widget.current_apps,widget.all_apps));
                                           Navigator.push(context, route);
                                          
                                        }

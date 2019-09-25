@@ -4,6 +4,11 @@ import android.app.admin.DevicePolicyManager;
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry.Registrar;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -19,7 +24,7 @@ import java.util.*;
 import java.util.List;
 import android.os.Handler;
 import 	java.lang.reflect.Method;
-
+import android.graphics.Color;
 
 import java.util.Arrays;
 import android.content.Intent;
@@ -61,6 +66,10 @@ import android.content.pm.PackageManager;
 import android.app.PendingIntent;
 import android.content.pm.PackageInstaller;
 import android.Manifest;
+import android.app.Service;
+import android.content.*;
+import android.os.*;
+import android.widget.Toast;
 
 
 
@@ -72,6 +81,7 @@ public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "com.tarazgroup";
     // To keep track of activity's window focus
     boolean currentFocus;
+    Context context=this;
     
     // To keep track of activity's foreground/background status
     boolean isPaused;
@@ -85,23 +95,20 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         flutterView=getFlutterView();
         GeneratedPluginRegistrant.registerWith(this);
-        doNotLockScreen();
+    
         hideSystemUI(flutterView);
 
-        
-        
-        View decorView = getWindow().getDecorView();
-        // Hide the status bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
-        // Remember that you should never show the action bar if the
-        // status bar is hidden, so hide that too if necessary.
+        transparentStatusAndNavigation();
 
+        
+         String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+         this.requestPermissions(permissions,1);
+  
+        
+        
+
+        
        
-    
-
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-        WindowManager.LayoutParams.FLAG_FULLSCREEN);
        
         
       
@@ -112,7 +119,50 @@ public class MainActivity extends FlutterActivity {
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(), 1000, pendingIntent);
 
+        new MethodChannel(getFlutterView(), CHANNEL).setMethodCallHandler(
+            new MethodCallHandler() {
+                @Override
+                public void onMethodCall(MethodCall call, Result result) {
+                    List<String> allowed_apps=call.argument("allowed_apps");
+                    String[] allowed_ = new String[allowed_apps.size()];
+
+                    for(int i =0;i<allowed_apps.size();i++){
+
+                        allowed_[i]=allowed_apps.get(i);
+
+                    }
+                    if (call.method.equals("StartService")) {
+                        Intent intent = new Intent(context, BackgroundService.class);
+                        intent.putExtra("allowed_apps", allowed_);
+                        startService(intent);
+                        result.success("Android ");
+                      }
+                }
+            });
+
     }
+
+    private void transparentStatusAndNavigation() {
+       
+            setWindowFlag(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, false);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(Color.TRANSPARENT);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        
+    }
+    private void setWindowFlag(final int bits, boolean on) {
+        Window win = getWindow();
+        WindowManager.LayoutParams winParams = win.getAttributes();
+        if (on) {
+            winParams.flags |= bits;
+        } else {
+            winParams.flags &= ~bits;
+        }
+        win.setAttributes(winParams);
+    }
+    
+    
 
     public void collapseNow() {
 
@@ -187,14 +237,9 @@ public class MainActivity extends FlutterActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        alarmManager.cancel(pendingIntent);
     }
 
-    @Override
-    public void onBackPressed() {
-	// nothing to do here
-	// … really      
-   }
+   
    private List blockedKeys = new ArrayList();
 
    @Override
@@ -223,12 +268,10 @@ public class MainActivity extends FlutterActivity {
     // doesn't resize when the system bars hide and show.
     view.setSystemUiVisibility(
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                     | View.SYSTEM_UI_FLAG_IMMERSIVE);
    }
+   
 
    
 
@@ -291,14 +334,15 @@ public class MainActivity extends FlutterActivity {
     
       
            
-   
+    
 
     static void callFlutter(){
         MethodChannel methodChannel=new MethodChannel(flutterView, CHANNEL);
         methodChannel.invokeMethod("I say hello every minute!!","");
     }
 
-    public static class CustomViewGroup extends ViewGroup {
+
+public static class CustomViewGroup extends ViewGroup {
       public CustomViewGroup(Context context) {
           super(context);
       }
@@ -319,79 +363,6 @@ public class MainActivity extends FlutterActivity {
 
 
 
-class MyDeviceAdminReceiver extends DeviceAdminReceiver {
-
-  Activity activity;
-       MyDeviceAdminReceiver(Activity activity){
-      this.activity= activity;
-}
-
-
-
-  /**
-   * method to show toast
-   *
-   * @param context the application context on which the toast has to be displayed
-   * @param msg     the message which will be displayed in the toast
-   */
-  private void showToast(Context context, CharSequence msg) {
-      Log.e("MyDeviceAdminRec...", "::>>>>1 ");
-      Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-  }
-  
-
-  @Override
-  public void onEnabled(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>2 ");
-      showToast(context, "Sample Device Admin: enabled");
-  }
-
-  @Override
-  public CharSequence onDisableRequested(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>3 ");
-      return "This is an optional message to warn the user about disabling.";
-  }
-
-  @Override
-  public void onDisabled(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>4 ");
-      showToast(context, "Sample Device Admin: disabled");
-  }
-
-  @Override
-  public void onPasswordChanged(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>5 ");
-      showToast(context, "Sample Device Admin: pw changed");
-  }
-
-  @Override
-  public void onPasswordFailed(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>6 ");
-      showToast(context, "Sample Device Admin: pw failed");
-  }
-
-  @Override
-  public void onPasswordSucceeded(Context context, Intent intent) {
-      Log.e("MyDeviceAdminRec...", "::>>>>7 ");
-      showToast(context, "Sample Device Admin: pw succeeded");
-  }
-
-  @Override
-  public void onProfileProvisioningComplete(Context context, Intent intent) {
-   // Enable the profile
-   DevicePolicyManager manager =(DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
-   ComponentName componentName = new ComponentName(context,this.getClass());
-   manager.setProfileName(componentName, "WorkProfile");
-
-   // If I do not do this, the application will not enter in profile mode, and I don't know why 
-
-   Intent launch = new Intent(context, this.activity.getClass());
-   launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-   context.startActivity(launch);
-  }
-
-  
-}
 
 
 

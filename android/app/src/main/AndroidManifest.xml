@@ -56,8 +56,9 @@
                 
             </intent-filter> 
         </activity>
+         <service android:name=".BackgroundService" android:exported="false" /> 
          <receiver android:name=".MyReceiver"></receiver>
-         <service android:name=".AlertService" />
+         <service android:name=".AlertService"/>
          <receiver 
          android:name=".MyDeviceAdminReceiver"
          android:permission="android.permission.BIND_DEVICE_ADMIN">

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:getinfo/AllowApps.dart';
 import 'Home.dart';
@@ -5,22 +7,27 @@ import 'Home.dart';
 
 
 class Config extends StatefulWidget {
+  List current_apps =[];
+  List all_apps=[];
+  Config(this.current_apps,this.all_apps);
   @override
-  _ConfigState createState() => _ConfigState();
+  _ConfigState createState() => _ConfigState(current_apps);
 }
 
 class _ConfigState extends State<Config> {
   bool config = false;
+  List apps=[];
+  _ConfigState(this.apps);
   @override
   Widget build(BuildContext context) {
-    return config?Home(): Scaffold(
+    return config?Home(null): Scaffold(
         appBar:  PreferredSize(
           preferredSize: Size.fromHeight(80.0), // here the desired height
           child: AppBar(elevation: 0,backgroundColor: Colors.transparent, 
           
          
           actions: <Widget>[
-            IconButton(icon: Icon(Icons.search,color: Colors.black,),onPressed: (){ showSearch(context: context,delegate: searchbar());},)
+            IconButton(icon: Icon(Icons.search,color: Colors.black,),onPressed: (){ showSearch(context: context,delegate: searchbar(apps,widget.all_apps));},)
           ]
           
             ,title:  Center(child: Text("Admin Settings",style: TextStyle(color: Colors.black),)),),
@@ -66,7 +73,7 @@ class _ConfigState extends State<Config> {
                     child: ListTile(
                       trailing: Icon(Icons.arrow_forward_ios),
                       onTap: (){
-                        var route = MaterialPageRoute(builder:(context)=> Appconfig());
+                        var route = MaterialPageRoute(builder:(context)=> Appconfig(widget.current_apps,widget.all_apps));
                         Navigator.push(context, route);
                       },
                       leading: Icon(Icons.apps),
@@ -146,7 +153,7 @@ class _ConfigState extends State<Config> {
                     padding: const EdgeInsets.only(top:18.0),
                     child: ListTile(
                       trailing: Icon(Icons.arrow_forward_ios,color: Colors.white,),
-                    
+                      onTap: (){exit(0);},
                       leading: Icon(Icons.warning,color: Colors.white,),
                       title: Text("Kiosk Settings",style: TextStyle(color: Colors.white),),
                      
@@ -169,6 +176,9 @@ class _ConfigState extends State<Config> {
 }
 
 class searchbar extends SearchDelegate{
+  List apps =[];
+  List all_apps=[];
+  searchbar(this.apps,this.all_apps);
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -229,7 +239,7 @@ class searchbar extends SearchDelegate{
                       onTap: (){
                         switch(item[i].name){
                             case "Allowed Apps":{
-                              var route = MaterialPageRoute(builder:(context)=> Appconfig());
+                              var route = MaterialPageRoute(builder:(context)=> Appconfig(apps,all_apps));
                               Navigator.push(context, route);
 
                             }

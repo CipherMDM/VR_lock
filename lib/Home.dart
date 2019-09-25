@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:getinfo/Appdrawer.dart';
@@ -6,6 +8,7 @@ import 'package:device_apps/device_apps.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:android_wifi_info/android_wifi_info.dart';
 import 'package:getinfo/config.dart';
+import 'package:getinfo/database/policy.dart';
 import 'package:imei_plugin/imei_plugin.dart';
 import 'package:uninstall_apps/uninstall_apps.dart';
 import 'package:admin/admin.dart';
@@ -21,12 +24,18 @@ import "package:system_info/system_info.dart";
 import 'package:app_usage/app_usage.dart';
 import 'package:cpu_usage/cpu_usage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:launcher_assist/launcher_assist.dart';
+import 'package:sembast/sembast.dart';
+import 'package:sembast/sembast_io.dart';
+
 
 
 
 
 
 class Home extends StatefulWidget {
+  List apps=[];
+  Home(this.apps);
   @override
   _HomeState createState() => _HomeState();
 }
@@ -77,6 +86,8 @@ class _HomeState extends State<Home> {
 
   bool config=false;
 
+
+
   configdialog(){
     showDialog(context: context,builder: (context){
       return AlertDialog(
@@ -91,17 +102,34 @@ class _HomeState extends State<Home> {
     });
   }
 
+  var store = StoreRef.main();
+
+
+
+   Future startservice() async {
+    Database db = await AppDatabase.instance.database; 
+   
+    store.record("Apps").get(db).then((data)async{
+       print(data);
+       await methodChannel.invokeMethod("StartService",{"allowed_apps":data});
+    });
+    
+   }
+
   
      
   initState(){
 
     
-
-    
+    startservice();
+    db();
 
      time = TimeOfDay.now().toString();
      battery =Battery();
+
      
+     
+    
 
 
    
@@ -109,6 +137,8 @@ class _HomeState extends State<Home> {
     Admin.enable();
     Downloader.getPermission();
     super.initState();
+
+    
   
     // methodChannel.setMethodCallHandler((call)async {
         
@@ -202,7 +232,7 @@ class _HomeState extends State<Home> {
 }
 
 
-
+  List all_apps=[];
   Future getInfo() async{
 
    DeviceInfoPlugin info = DeviceInfoPlugin();
@@ -210,6 +240,7 @@ class _HomeState extends State<Home> {
    List<Application> apps = await DeviceApps.getInstalledApplications(includeSystemApps: true);
 
    List app = []; 
+   
    var imei = await ImeiPlugin.getImei;
    print(apps);
   
@@ -345,159 +376,178 @@ class _HomeState extends State<Home> {
            throw 'Could not launch $url';
          }   
      }
+     List apps=[];
+
+     Future db() async {
+        Database db = await AppDatabase.instance.database;
+       
+
+
+        store.record("Apps").get(db).then((data)async{
+             apps = await DeviceApps.getInstalledApplications(includeAppIcons: true,onlyAppsWithLaunchIntent: true,includeSystemApps: true);
+             all_apps = await DeviceApps.getInstalledApplications(includeAppIcons: true,onlyAppsWithLaunchIntent: true,includeSystemApps: true);
+             apps = apps.where((app)=>data.contains(app.packageName) && app.packageName!="com.example.getinfo").toList();
+
+         });
+
+
+    
+  }
+
+  
 
      
 
-
-
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+    new GlobalKey<RefreshIndicatorState>();
 
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays ([SystemUiOverlay.top]);
     return Scaffold(
        
-       backgroundColor: Colors.white,
-       body: Padding(
-               padding: const EdgeInsets.all(18.0),
-               child: Column(
-                 mainAxisAlignment: MainAxisAlignment.end,
-                 children: <Widget>[
+       
+       
+       body: RefreshIndicator(
+         key: _refreshIndicatorKey,
+         onRefresh: db,
+         child: Container(
+           height: MediaQuery.of(context).size.height,
+           decoration: BoxDecoration(
+             image:DecorationImage(image:Image.network("https://images.pexels.com/photos/2604929/pexels-photo-2604929.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260").image ,fit: BoxFit.fill ) 
+           ),
+           child: Padding(
+                   padding: const EdgeInsets.only(top:18.0,bottom: 18,left: 12,right: 12),
+                   child: Column(
+                     mainAxisAlignment: MainAxisAlignment.end,
+                     children: <Widget>[
 
-                   Expanded(child: Container(
-                     height: 100,
-                     width: MediaQuery.of(context).size.width,
-                     child: StreamBuilder(
-                      stream: null, //Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).snapshots(),
-                       builder: (context,snap){
-                           
+                       Container(
                          
-                           if(snap.hasData){
-                              getUsageStats();
-                              print(snap.data.documents.last.data["System"]);   
-                              if(snap.hasData){
-                                if(snap.data.documents.last.data["Command"].toString().startsWith("uninstall")){
-                                 Admin.uninstall("com.facebook.lite"); 
-                                
-                              
-                                }else if(snap.data.documents.last.data["Command"].toString().startsWith("install")){
-                                    installapps(snap.data.documents.last.data["Command"].toString().split(" ")[1].toString());
-                              
-                                }else if(snap.data.documents.last["Command"].toString().startsWith("download")){
-                                    String url = snap.data.documents.last.data["Command"].toString().split(" ")[1].toString();
-                                    String name = snap.data.documents.last.data["Command"].toString().split(" ")[2].toString();
-                                    String ext = "."+snap.data.documents.last.data["Command"].toString().split(" ")[3].toString();
-                                    Downloader.download(url,name,ext);
-                              
-                                }else if(snap.data.documents.last.data["Command"].toString().startsWith("promptwifi")){
-                                    
-                                     ConnectWifi.enable();
-                                     ConnectWifi.openWifi();
-                                    
-                                }
-
-                                print(snap.data.documents.last["Command"]+"        1");
-                                   CpuUsage.getRam().then((ram){
-                                 AndroidWifiInfo.bssid.then((bssid){
-                                 AndroidWifiInfo.ssid.then((ssid){
-                                 AndroidWifiInfo.macAddress.then((mac){
+                        //  height: 100,
+                        //  width: MediaQuery.of(context).size.width,
+                        //  child: StreamBuilder(
+                        //   stream: null, //Firestore.instance.collection("Informations").where("Device_info.id",isEqualTo:fg).snapshots(),
+                        //    builder: (context,snap){
                                
-                                   getUsageStats().then((running_app){
-                                         print(running_app);
-          
-                                    battery.batteryLevel.then((bat){
+                             
+                        //        if(snap.hasData){
+                        //           getUsageStats();
+                        //           print(snap.data.documents.last.data["System"]);   
+                        //           if(snap.hasData){
+                        //             if(snap.data.documents.last.data["Command"].toString().startsWith("uninstall")){
+                        //              Admin.uninstall("com.facebook.lite"); 
+                                    
+                                  
+                        //             }else if(snap.data.documents.last.data["Command"].toString().startsWith("install")){
+                        //                 installapps(snap.data.documents.last.data["Command"].toString().split(" ")[1].toString());
+                                  
+                        //             }else if(snap.data.documents.last["Command"].toString().startsWith("download")){
+                        //                 String url = snap.data.documents.last.data["Command"].toString().split(" ")[1].toString();
+                        //                 String name = snap.data.documents.last.data["Command"].toString().split(" ")[2].toString();
+                        //                 String ext = "."+snap.data.documents.last.data["Command"].toString().split(" ")[3].toString();
+                        //                 Downloader.download(url,name,ext);
+                                  
+                        //             }else if(snap.data.documents.last.data["Command"].toString().startsWith("promptwifi")){
+                                        
+                        //                  ConnectWifi.enable();
+                        //                  ConnectWifi.openWifi();
+                                        
+                        //             }
 
-                                     Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData(
-                                                                {"Command":"",
-                                                                "Battery":bat,
-                                                                "wifi":{
-                                                                             "bssid":bssid,
-                                                                             "ssid":ssid,
-                                                                             "mac address":mac
-                                                                           },
-                                                                 "Running Apps":running_app,
-                                                                 "RamInfo":{
-                                                                           "Total Ram":"${ram[0]} MB",
-                                                                           "Avaliable Ram":"${ram[1]} MB",
-                                                                            "Used Ram":"${ram[2]} MB",
-                                                                            "Threshold Ram":"${ram[3]} MB",
-                                                                          }         
-                                                    
-                                                                });
+                        //             print(snap.data.documents.last["Command"]+"        1");
+                        //                CpuUsage.getRam().then((ram){
+                        //              AndroidWifiInfo.bssid.then((bssid){
+                        //              AndroidWifiInfo.ssid.then((ssid){
+                        //              AndroidWifiInfo.macAddress.then((mac){
+                                   
+                        //                getUsageStats().then((running_app){
+                        //                      print(running_app);
+              
+                        //                 battery.batteryLevel.then((bat){
 
-                                    });
+                        //                  Firestore.instance.collection("Informations").document(snap.data.documents.last.documentID).updateData(
+                        //                                             {"Command":"",
+                        //                                             "Battery":bat,
+                        //                                             "wifi":{
+                        //                                                          "bssid":bssid,
+                        //                                                          "ssid":ssid,
+                        //                                                          "mac address":mac
+                        //                                                        },
+                        //                                              "Running Apps":running_app,
+                        //                                              "RamInfo":{
+                        //                                                        "Total Ram":"${ram[0]} MB",
+                        //                                                        "Avaliable Ram":"${ram[1]} MB",
+                        //                                                         "Used Ram":"${ram[2]} MB",
+                        //                                                         "Threshold Ram":"${ram[3]} MB",
+                        //                                                       }         
+                                                        
+                        //                                             });
 
-               
-               
-                                  });});});});});
+                        //                 });
 
-                                
+                   
+                   
+                        //               });});});});});
 
-                               
+                                    
+
+                                   
+                                     
+                                   
+
+                                    
+                        //           }
+                        //           }
+                        //            return Center();
                                  
-                               
 
-                                
-                              }
-                              }
-                               return GridView.count(
-                               // Create a grid with 2 columns. If you change the scrollDirection to
-                               // horizontal, this produces 2 rows.
-                               
-                               crossAxisCount: 4,
-                               // Generate 100 widgets that display their index in the List.
-                               children: List.generate(0, (index) {
-                                 return Center(
-                                   child: Text(
-                                     'Item $index',
-                                     style: Theme.of(context).textTheme.headline,
-                                   ),
-                                 );
-                               }),
-                             );
+                                    
                              
 
-                                
-                         
 
-
-                       },
-                     ),
-                   ),),
-                  
-                  
-                   Padding(padding: EdgeInsets.all(10),),
-                    Material(
+                        //    },
+                        //  ),
+                        child: Center(),
+                       ),
                       
                       
-                      elevation:3,
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 80,
-                       
-                        width: MediaQuery.of(context).size.width,
-                        child: Row(
+                       Padding(padding: EdgeInsets.only(top:10,bottom: 10,left: 0),),
+                        Material(
                           
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            IconButton(icon: Icon(Icons.phone,size: 30, color: Colors.black,),onPressed: (){
-                                 _launchCaller();
-                            },),
-                            IconButton(icon: Icon(Icons.home,size: 30,color: Colors.black, ),onPressed: (){
-                                 var route = MaterialPageRoute(builder: (context)=>AppDraw(fg));
-                                 Navigator.of(context).push(route);
-                            }),
-                            IconButton(icon: Icon(Icons.message,size: 30, color: Colors.black,),onPressed: (){
-                                      _launchSms();
-                            })
+                          
+                          elevation:3,
+                          color: Colors.grey.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            height: 80,
+                           
+                            width: MediaQuery.of(context).size.width,
+                            child: Row(
+                              
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                IconButton(icon: Icon(Icons.phone,size: 30, color: Colors.black,),onPressed: (){
+                                     _launchCaller();
+                                },),
+                                IconButton(icon: Icon(Icons.home,size: 30,color: Colors.black, ),onPressed: (){
+                                     var route = MaterialPageRoute(builder: (context)=>AppDraw(fg,apps,all_apps));
+                                     Navigator.of(context).push(route);
+                                }),
+                                IconButton(icon: Icon(Icons.message,size: 30, color: Colors.black,),onPressed: (){
+                                          _launchSms();
+                                })
 
-                          ],
+                              ],
+                            )
+                          ),
                         )
-                      ),
-                    )
-                 ],
-               ),
-            
+                     ],
+                   ),
+                
+           ),
+         ),
        ),
        
     );
