@@ -105,14 +105,6 @@ public class MainActivity extends FlutterActivity {
          this.requestPermissions(permissions,1);
   
         
-        
-
-        
-       
-       
-        
-      
-      
   
         Intent intent = new Intent(this, MyReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(this, 1019662, intent, 0);
@@ -151,6 +143,7 @@ public class MainActivity extends FlutterActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         
     }
+    
     private void setWindowFlag(final int bits, boolean on) {
         Window win = getWindow();
         WindowManager.LayoutParams winParams = win.getAttributes();
